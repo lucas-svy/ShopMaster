@@ -1,0 +1,55 @@
+# Blueprint Render (PBI-05) — Render > New > Blueprint > choisir ce dépôt GitHub.
+# Reproduit l'architecture du docker-compose.yml : PostgreSQL + API + frontend, chacun en conteneur Docker.
+# Les variables "sync: false" sont demandées par Render lors de la création du Blueprint (voir docs/deploiement-render.md).
+
+databases:
+  - name: shopmaster-db
+    plan: free
+    region: frankfurt
+    databaseName: shopmaster
+    user: shopmaster
+    postgresMajorVersion: "17"
+
+services:
+  - type: web
+    name: shopmaster-api
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerContext: ./backend
+    dockerfilePath: ./backend/Dockerfile
+    healthCheckPath: /health
+    # Déploie uniquement si la CI GitHub est verte (PBI-05-b).
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: ConnectionStrings__Default
+        fromDatabase:
+          name: shopmaster-db
+          property: connectionString
+      - key: Auth0__Domain
+        sync: false
+      - key: Auth0__Audience
+        sync: false
+      # URL publique du frontend, ex. https://shopmaster-web.onrender.com
+      - key: Cors__AllowedOrigins
+        sync: false
+
+  - type: web
+    name: shopmaster-web
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerContext: ./frontend
+    dockerfilePath: ./frontend/Dockerfile
+    healthCheckPath: /
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: AUTH0_DOMAIN
+        sync: false
+      - key: AUTH0_CLIENT_ID
+        sync: false
+      - key: AUTH0_AUDIENCE
+        sync: false
+      # URL publique de l'API, ex. https://shopmaster-api.onrender.com
+      - key: API_URL
+        sync: false

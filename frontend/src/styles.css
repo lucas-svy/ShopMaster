@@ -1,0 +1,356 @@
+/* ShopMaster — rendu volontairement minimaliste.
+   Un seul élément fort : l'étiquette de prix jaune. Tout le reste est sobre. */
+
+:root {
+  --ink: #1b1f3b;
+  --paper: #ffffff;
+  --surface: #f6f7fa;
+  --muted: #5e6278;
+  --line: #e4e5ec;
+  --tag: #ffd23f;
+  --tag-ink: #1b1f3b;
+  --brand-panel: #1b1f3b;
+  --danger: #b42318;
+  --danger-bg: #fef3f2;
+  --focus: #3b5bdb;
+  --font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #ecedf5;
+    --paper: #12142a;
+    --surface: #1a1d38;
+    --muted: #a3a7be;
+    --line: #2a2d4a;
+    --brand-panel: #23274d;
+    --danger: #fda29b;
+    --danger-bg: #3a1512;
+    --focus: #8ea2ff;
+    color-scheme: dark;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 1rem;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2 {
+  margin: 0;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+h1 {
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  font-weight: 800;
+}
+
+h2 {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+a {
+  color: inherit;
+  font-weight: 600;
+  text-underline-offset: 0.2em;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+code {
+  font-size: 0.95em;
+  background: var(--surface);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+}
+
+/* ---------- Étiquette de prix (logo) ---------- */
+
+.brand-tag {
+  --tag-notch: 0.85em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  padding: 0.3em 0.85em 0.3em calc(var(--tag-notch) + 0.35em);
+  background: var(--tag);
+  color: var(--tag-ink);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  border-radius: 0 0.3em 0.3em 0;
+  clip-path: polygon(var(--tag-notch) 0, 100% 0, 100% 100%, var(--tag-notch) 100%, 0 50%);
+  white-space: nowrap;
+}
+
+.brand-tag__hole {
+  width: 0.42em;
+  height: 0.42em;
+  border-radius: 50%;
+  background: var(--tag-hole, var(--paper));
+}
+
+.brand-tag--large {
+  font-size: clamp(2rem, 4.5vw, 3.75rem);
+  transform: rotate(-5deg);
+}
+
+/* ---------- Pages connexion / inscription ---------- */
+
+.auth {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.auth__brand {
+  --tag-hole: var(--brand-panel);
+  display: grid;
+  place-items: center;
+  padding: 2.5rem 1rem;
+  background: var(--brand-panel);
+  overflow: hidden;
+}
+
+.auth__panel {
+  width: 100%;
+  max-width: 26rem;
+  padding: 2.5rem 1rem 3rem;
+  justify-self: center;
+  align-self: start;
+}
+
+.auth__panel h1 {
+  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 800px) {
+  .auth {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: none;
+  }
+
+  .auth__panel {
+    padding: 3rem 2rem;
+    align-self: center;
+  }
+}
+
+.lead {
+  margin: 0 0 1.75rem;
+  color: var(--muted);
+  font-size: 1.0625rem;
+}
+
+.hint {
+  margin: 0.75rem 0 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.switch {
+  margin: 2rem 0 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+}
+
+/* ---------- Boutons ---------- */
+
+.button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0.6rem 1.25rem;
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  background: var(--ink);
+  color: var(--paper);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth__panel .button {
+  width: 100%;
+}
+
+.button:hover {
+  opacity: 0.9;
+}
+
+.button--quiet {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--line);
+  min-height: 2.5rem;
+  padding: 0.45rem 1rem;
+}
+
+.button--quiet:hover {
+  opacity: 1;
+  border-color: var(--ink);
+}
+
+/* ---------- Messages ---------- */
+
+.notice {
+  margin: 0 0 1.25rem;
+  padding: 0.85rem 1rem;
+  border-radius: 6px;
+}
+
+.notice p {
+  margin: 0 0 0.75rem;
+}
+
+.notice--error {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+p.notice--error {
+  margin-bottom: 1.25rem;
+}
+
+.status {
+  margin: 0;
+  color: var(--muted);
+}
+
+.status--page {
+  padding: 3rem 1rem;
+  text-align: center;
+}
+
+.status__slow {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.875rem;
+}
+
+/* ---------- Accueil connecté ---------- */
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.875rem clamp(1rem, 4vw, 2rem);
+  border-bottom: 1px solid var(--line);
+}
+
+.home__main {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 2.5rem clamp(1rem, 4vw, 2rem) 4rem;
+}
+
+.section {
+  margin-top: 2.5rem;
+}
+
+.section h2 {
+  margin-bottom: 0.75rem;
+}
+
+.facts {
+  margin: 0;
+  border-top: 1px solid var(--line);
+}
+
+.facts > div {
+  display: grid;
+  grid-template-columns: 11rem 1fr;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.facts dt {
+  color: var(--muted);
+}
+
+.facts dd {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 520px) {
+  .facts > div {
+    grid-template-columns: 1fr;
+    gap: 0.15rem;
+  }
+}
+
+.count {
+  display: inline-block;
+  min-width: 1.6em;
+  margin-left: 0.35em;
+  padding: 0 0.45em;
+  border-radius: 999px;
+  background: var(--tag);
+  color: var(--tag-ink);
+  font-size: 0.8125rem;
+  text-align: center;
+  vertical-align: 0.15em;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+th,
+td {
+  padding: 0.6rem 0.75rem 0.6rem 0;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  white-space: nowrap;
+}
+
+th {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+/* ---------- Configuration manquante ---------- */
+
+.config-error {
+  max-width: 36rem;
+  margin: 0 auto;
+  padding: 3rem 1rem;
+}
+
+.config-error h1 {
+  margin: 1.5rem 0 0.75rem;
+}

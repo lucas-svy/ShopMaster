@@ -1,0 +1,83 @@
+# CI ShopMaster (PBI-05-a / PBI-05-b)
+# Chaque push et chaque pull request lancent les tests. Render est configuré avec
+# autoDeployTrigger: checksPass (render.yaml) : un test en échec bloque le déploiement.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api-tests:
+    name: API .NET — build et tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet restore
+      - run: dotnet build --no-restore --configuration Release
+      - name: Tests des endpoints (PBI-04)
+        run: dotnet test --no-build --configuration Release --logger trx --results-directory TestResults
+      - name: Publier le rapport de tests
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: api-test-results
+          path: backend/TestResults
+
+  frontend:
+    name: Frontend React — tests et build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+
+  docker-compose:
+    name: Docker Compose — démarrage de l'architecture complète
+    needs: [api-tests, frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Configuration de test
+        run: cp .env.example .env
+      - name: Construire et démarrer db + api + frontend
+        run: docker compose up --build --detach --wait --wait-timeout 240
+      - name: Vérifier que les trois services communiquent
+        run: |
+          set -eux
+          # L'API répond et joint PostgreSQL (migrations appliquées au démarrage)
+          curl -fsS http://localhost:8080/health/ready
+          # Les endpoints de comptes sont protégés par Auth0
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/api/users)" = "401"
+          # La table users existe bien dans PostgreSQL
+          docker compose exec -T db psql -U shopmaster -d shopmaster -tAc "SELECT to_regclass('public.users')" | grep -qx users
+          # Le frontend est servi avec sa configuration injectée
+          curl -fsS http://localhost:3000/connexion | grep -q '<div id="root">'
+          curl -fsS http://localhost:3000/config.js | grep -q 'apiUrl: "http://localhost:8080"'
+      - name: Journaux des conteneurs
+        if: failure()
+        run: docker compose logs
+      - name: Arrêt
+        if: always()
+        run: docker compose down --volumes
